@@ -41,7 +41,7 @@ namespace dal
             {
                 new SqlParameter("stunum",stu.Num),
                 new SqlParameter("stuname",stu.Name),
-                new SqlParameter("stusex",stu.Sex),
+                new SqlParameter("stusex",(object)stu.Sex ?? DBNull.Value),
                 new SqlParameter("stuage",stu.Age==null?DBNull.Value:(object)stu.Age),
                 new SqlParameter("stuClass",stu.Class),
                 new SqlParameter("stuSpeciality",stu.Speciality),
@@ -72,7 +72,7 @@ namespace dal
             {
                 new SqlParameter("@stunum",stu.Num),
                 new SqlParameter("@stuname",stu.Name),
-                new SqlParameter("@stusex",stu.Sex),
+                new SqlParameter("@stusex",(object)stu.Sex ?? DBNull.Value),
                 new SqlParameter("@stuage",stu.Age==null?DBNull.Value:(object)stu.Age),
                 new SqlParameter("@stuClass",stu.Class),
                 new SqlParameter("@stuSpeciality",stu.Speciality),
@@ -86,20 +86,23 @@ namespace dal
         {
             string sql = "select * from student where ID=@ID";
             SqlParameter pm = new SqlParameter("@ID", ID);
-            SqlDataReader dr = SqlHelper.ExecuteReader(sql, pm);
-            Student stu = new Student();
-            if (dr.Read())
+            using (SqlDataReader dr = SqlHelper.ExecuteReader(sql, pm))
             {
-                stu.ID = dr.GetInt32(0);
-                stu.Num = dr.GetString(1);
-                stu.Name = dr.GetString(2);
-                stu.Sex = dr.GetString(3);
-                stu.Age = Convert.IsDBNull(dr[4]) ? null : (int?)dr.GetInt32(4);
-                stu.Class = dr.GetString(5);
-                stu.Speciality = dr.GetString(6);
-                stu.Phone = dr.GetString(7);
+                if (!dr.Read())
+                    return null;
+
+                return new Student
+                {
+                    ID = dr.GetInt32(0),
+                    Num = dr.GetString(1),
+                    Name = dr.GetString(2),
+                    Sex = dr.IsDBNull(3) ? null : dr.GetString(3),
+                    Age = dr.IsDBNull(4) ? null : (int?)dr.GetInt32(4),
+                    Class = dr.GetString(5),
+                    Speciality = dr.GetString(6),
+                    Phone = dr.IsDBNull(7) ? null : dr.GetString(7)
+                };
             }
-            return stu;
         }
 
     }

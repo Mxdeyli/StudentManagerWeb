@@ -14,15 +14,8 @@ namespace UI
         StudentBLL bll = new StudentBLL();
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["username"] == null) {
-                Response.Redirect("Login.aspx");
-            }
-            else
-            {
-                List<Student> students = bll.GetAllStudents();
-                GridView1.DataSource= students;
-                GridView1.DataBind();
-            }
+            if (!IsPostBack)
+                BindStudents();
         }
 
         protected void Button1_Click(object sender, EventArgs e)
@@ -41,8 +34,12 @@ namespace UI
             {
                 Response.Write("<script>alert('删除失败!');</script>");
             }
-            List<Student> students = bll.GetAllStudents();
-            GridView1.DataSource = students;
+            BindStudents();
+        }
+
+        private void BindStudents()
+        {
+            GridView1.DataSource = bll.GetAllStudents();
             GridView1.DataBind();
         }
     }
